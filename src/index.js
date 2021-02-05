@@ -1,5 +1,6 @@
 //导入app
 const app = require('./app')
+const connection = require('./app/database')
 //导入环境变量的数据
 const { APP_PORT } = require('./app/config.js')
 

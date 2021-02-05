@@ -1,22 +1,22 @@
-//导出koa类
+//导入第三方模块
 const Koa = require("koa");
-//导入Router类
-const Router = require("koa-router");
+const bodyParser = require('koa-bodyparser')
+//导入循环注册路由的函数
+const useRoutesApp = require('../route')
+
+const { errorHandler } = require('./error')
 
 //koa导出的是一个类，express导出的是一个函数
 const app = new Koa();
 
-//创建一个路由实例,并添加路径前缀
-const userRouter = new Router({prefix: '/users'});
+//应用koa-bodyparser这个中间件的客户端的json数据进行解析
+app.use(bodyParser())
 
-//创建路由和中间件的映射
-userRouter.post('/',(ctx,next)=>{
-  ctx.response.body = '创建用户成功';
-});
+//调用循环注册路由的函数，将app传入
+useRoutesApp(app)
 
-//app应用路由
-app.use(userRouter.routes());
-app.use(userRouter.allowedMethods())
+//响应错误，并处理
+app.on('error', errorHandler)
 
 //导出app
 module.exports = app;
