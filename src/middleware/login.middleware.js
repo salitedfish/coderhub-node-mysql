@@ -1,8 +1,12 @@
+const jwt = require('jsonwebtoken')
+
 const errorType = require('../constants/error-types')
 const { getUserByName } = require('../service/user.service')
+const { checkMoment } = require('../service/auth.service')
 const { md5password } = require('../utils/passwordHandler')
+const { PUBLIC_KEY } = require('../app/config')
 
-//登录校验函数
+//登录校验函数，这个是用来验证是否可以登录，下面那个函数是来验证是否已经登录
 const verifyLogin = async (ctx, next) => {
 
   const { name, password } = ctx.request.body
@@ -26,13 +30,60 @@ const verifyLogin = async (ctx, next) => {
       const error = new Error(errorType.PASSWORD_WRONG)
       return ctx.app.emit('error', error, ctx)
     }
-    
+
   } else {
     const error = new Error(errorType.NAME_NOT_EXISTS)
+    return ctx.app.emit('error', error, ctx)
+  }
+
+  //将user赋值到ctx.user上
+  ctx.user = userArray[0];
+
+  await next()
+
+}
+
+
+
+//这个借口用来验证是否已经登录，通过token验证，后续其他模块在执行时都需要先进行token验证，只有当验证成功后才能调用下一个中间件
+const logined = async (ctx, next) => {
+
+  //获取请求头中的token
+  const authorization = ctx.request.header.authorization
+  //如果获取到没有token，则报未授权的错误并返回
+  if (!authorization) {
+    const error = new Error(errorType.USER_IS_NOT_LOGINED)
+    return ctx.app.emit('error', error, ctx)
+  }
+  const token = authorization.replace('Bearer ', '')
+
+  // 运用公钥验证token
+  try {
+    const result = jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] })
+    ctx.user = result
+    await next()
+  } catch (err) {
+    const error = new Error(errorType.USER_IS_NOT_LOGINED)
+    return ctx.app.emit('error', error, ctx)
+  }
+
+}
+
+
+const canUpdate = async (ctx, next) => {
+
+  const userId = ctx.user.id
+  const momId = ctx.request.params.momId
+
+  const result = await checkMoment(userId, momId)
+
+  //如果当前用户更改的指定动态不是他发的，或者没有指定的动态，会发出错误表示未授权
+  if (!result) {
+    const error = new Error(errorType.MOMENT_IS_NOT_FOUND)
     return ctx.app.emit('error', error, ctx)
   }
 
   await next()
 }
 
-module.exports = { verifyLogin }
+module.exports = { verifyLogin, logined, canUpdate }

@@ -1,5 +1,6 @@
 //导入连接数据库的桥梁
 const mysql = require('mysql2');
+
 //导入环境变量的数据
 const {
   MYSQL_HOST,
@@ -8,6 +9,7 @@ const {
   MYSQL_USER,
   MYSQL_PASSWORD, } = require('./config.js')
 
+//创建连接池
 const connection = mysql.createPool({
   host: MYSQL_HOST,
   port: MYSQL_PORT,
@@ -26,4 +28,5 @@ connection.getConnection((err, conn) => {
   })
 })
 
+//导出连接池
 module.exports = connection.promise();

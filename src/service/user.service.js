@@ -9,7 +9,7 @@ class UserService {
     const { name, password } = user;
 
     //定义sql预处理语句
-    const sqlLan = `INSERT INTO users (name,password) VALUES (?,?);`
+    const sqlLan = `INSERT INTO user (name,password) VALUES (?,?);`
 
     //执行sql语句，操作数据库
     const result = await connection.execute(sqlLan, [name, password])
@@ -21,7 +21,7 @@ class UserService {
 
   //通过用户名查询用户时调用的方法
   async getUserByName(name) {
-    const sqlLan = `SELECT * FROM users WHERE name = ?;`;
+    const sqlLan = `SELECT * FROM user WHERE name = ?;`;
     const result = await connection.execute(sqlLan, [name])
     return result[0]
   }
