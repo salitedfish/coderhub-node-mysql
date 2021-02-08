@@ -53,25 +53,26 @@ class MomentService {
   }
 
   //修改指定动态的数据库操作函数
-  async patchMom(userId, momId, content) {
+  async patchMom(userId, momentId, content) {
 
     const sqlLan = `UPDATE moment SET content = ? WHERE user_id = ? and id = ?`
 
-    const result = await connection.execute(sqlLan, [content, userId, momId])
+    const result = await connection.execute(sqlLan, [content, userId, momentId])
 
     return result[0]
 
   }
 
-  async canUpdateService(userId, momId){
 
-    //寻找用户id和动态id同时匹配的动态
-    const sqlLan = "SELECT * FROM moment WHERE user_id = ? AND id = ?"
+  //删除动态接口
+  async deleteMom(momentId) {
 
-    //执行sql语句
-    const result = await connection.execute(sqlLan,[userId,momId])
+    const sqlLan = "DELETE FROM moment WHERE id = ?"
 
-    return result[0]
+    const result = await connection.execute(sqlLan, [momentId])
+
+    return result
+
   }
 }
 

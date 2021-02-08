@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const errorType = require('../constants/error-types')
 const { getUserByName } = require('../service/user.service')
-const { checkMoment } = require('../service/auth.service')
+const { checkMoment, checkComment } = require('../service/auth.service')
 const { md5password } = require('../utils/passwordHandler')
 const { PUBLIC_KEY } = require('../app/config')
 
@@ -70,12 +70,16 @@ const logined = async (ctx, next) => {
 }
 
 
+//这个中间件其实主要是验证用户的id是否和动态的user_id对应
 const canUpdate = async (ctx, next) => {
 
   const userId = ctx.user.id
-  const momId = ctx.request.params.momId
+  const table = Object.keys(ctx.request.params)[0]
+  const tableName = table.replace('Id','')
+  const Id = ctx.request.params[table]
 
-  const result = await checkMoment(userId, momId)
+
+  const result = await checkMoment(userId, Id, tableName)
 
   //如果当前用户更改的指定动态不是他发的，或者没有指定的动态，会发出错误表示未授权
   if (!result) {
@@ -84,6 +88,7 @@ const canUpdate = async (ctx, next) => {
   }
 
   await next()
+
 }
 
 module.exports = { verifyLogin, logined, canUpdate }

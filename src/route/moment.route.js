@@ -11,7 +11,8 @@ const {
   createMoment,
   getMoment,
   getMomentList,
-  patchMoment
+  patchMoment,
+  deleteMoment
 } = require('../controller/moment.controller.js')
 
 //创建route实例
@@ -21,8 +22,11 @@ const momentRoute = new Router()
 momentRoute.post('/moment', logined, createMoment)
 //定义获得动态的接口
 momentRoute.get('/moment', logined, getMomentList)
-momentRoute.get('/moment/:momId', logined, getMoment)
-momentRoute.patch('/moment/:momId', logined, canUpdate, patchMoment)
+momentRoute.get('/moment/:momentId', logined, getMoment)
+//修改对应的动态
+momentRoute.patch('/moment/:momentId', logined, canUpdate, patchMoment)
+//删除对应的动态
+momentRoute.delete('/moment/:momentId', logined, canUpdate, deleteMoment)
 
 //导出route
 module.exports = momentRoute

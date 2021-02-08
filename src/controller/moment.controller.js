@@ -1,4 +1,4 @@
-const { create, getMom, getMomList, patchMom } = require('../service/moment.service')
+const { create, getMom, getMomList, patchMom, deleteMom } = require('../service/moment.service')
 
 const { QUERY_IS_EMPERTY, MOMENT_IS_NOT_FOUND } = require('../constants/error-types')
 
@@ -61,12 +61,25 @@ class MomentController {
   //修改用户指定的动态
   async patchMoment(ctx, next) {
 
-    const userId = ctx.user.id
-    const { momId } = ctx.request.params
+    const { momentId } = ctx.request.params
     const { content } = ctx.request.body
 
-    const result = await patchMom(userId, momId, content)
+    const result = await patchMom(userId, momentId, content)
 
+    //把更改结果返回给客户端
+    ctx.response.body = result
+
+  }
+
+  //删除指定的动态
+  async deleteMoment(ctx, next) {
+
+    
+
+    const momentId = ctx.request.params.momentId
+    
+    const result = await deleteMom(momentId)
+    
     //把更改结果返回给客户端
     ctx.response.body = result
 
