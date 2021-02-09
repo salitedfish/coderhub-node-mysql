@@ -1,4 +1,4 @@
-const { createCommentService, createCommentReplyService, patchCommentReplyService,deleteCommentReplyService } = require('../service/comment.service')
+const { createCommentService, createCommentReplyService, patchCommentReplyService, deleteCommentReplyService,getCommentListService } = require('../service/comment.service')
 
 class CommentController {
   //评论动态接口
@@ -43,12 +43,24 @@ class CommentController {
     ctx.response.body = result
   }
 
+  //删除评论接口
   async deleteComment(ctx, next) {
     const { commentId } = ctx.request.params
 
     const result = await deleteCommentReplyService(commentId)
 
     ctx.response.body = result
+  }
+
+  //获取评论列表接口
+  async getCommentList(ctx, next) {
+
+    const momentId = ctx.request.query.momentId
+
+    const result = await getCommentListService(momentId)
+
+    ctx.response.body = result
+
   }
 }
 

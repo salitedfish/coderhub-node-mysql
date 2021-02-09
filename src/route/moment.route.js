@@ -12,8 +12,12 @@ const {
   getMoment,
   getMomentList,
   patchMoment,
-  deleteMoment
+  deleteMoment,
+  addLabelToMoment
 } = require('../controller/moment.controller.js')
+
+//导入标签相关的中间件
+const { isLabelExists } = require('../middleware/label.middleware.js')
 
 //创建route实例
 const momentRoute = new Router()
@@ -27,6 +31,8 @@ momentRoute.get('/moment/:momentId', logined, getMoment)
 momentRoute.patch('/moment/:momentId', logined, canUpdate, patchMoment)
 //删除对应的动态
 momentRoute.delete('/moment/:momentId', logined, canUpdate, deleteMoment)
+//给动态添加标签
+momentRoute.post('/moment/:momentId/labels', logined, canUpdate, isLabelExists, addLabelToMoment)
 
 //导出route
 module.exports = momentRoute

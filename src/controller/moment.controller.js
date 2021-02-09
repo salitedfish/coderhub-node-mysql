@@ -1,6 +1,8 @@
-const { create, getMom, getMomList, patchMom, deleteMom } = require('../service/moment.service')
+const { create, getMom, getMomList, patchMom, deleteMom, addLabelToMomentService } = require('../service/moment.service')
 
 const { QUERY_IS_EMPERTY, MOMENT_IS_NOT_FOUND } = require('../constants/error-types')
+
+const connection = require('../app/database')
 
 class MomentController {
 
@@ -25,10 +27,10 @@ class MomentController {
   async getMoment(ctx, next) {
 
     //前面验证token的时候，已经给ctx.user赋值了用户信息
-    const { momId } = ctx.request.params
+    const { momentId } = ctx.request.params
 
     //将用户id传递给获取动态的函数，函数返回动态列表
-    const result = await getMom(momId)
+    const result = await getMom(momentId)
 
     //给客户端返回获取到的动态列表
     ctx.response.body = result
@@ -74,14 +76,27 @@ class MomentController {
   //删除指定的动态
   async deleteMoment(ctx, next) {
 
-    
+
 
     const momentId = ctx.request.params.momentId
-    
+
     const result = await deleteMom(momentId)
-    
+
     //把更改结果返回给客户端
     ctx.response.body = result
+
+  }
+
+  //给动态添加标签
+  async addLabelToMoment(ctx, next) {
+
+    const { momentId } = ctx.request.params
+
+    await addLabelToMomentService(momentId,ctx.labels)
+
+    ctx.response.body = "动态添加标签成功~"
+
+    
 
   }
 

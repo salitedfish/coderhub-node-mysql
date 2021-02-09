@@ -46,6 +46,21 @@ class CommentService {
     return result
 
   }
+
+  //获取评论列表接口
+  async getCommentListService(momentId){
+
+    const sqlLan = `SELECT comment.id,comment.content,comment.comment_id AS commentId,comment.createAt AS createTime,JSON_OBJECT('id',u.id,'name',u.name) AS user
+                   FROM comment 
+                   LEFT JOIN user AS u
+                   ON u.id = comment.user_id
+                   WHERE moment_id = ?;`
+
+    const result = await connection.execute(sqlLan,[momentId])
+
+    return result[0]
+
+  }
 }
 
 module.exports = new CommentService()
