@@ -1,6 +1,11 @@
+const fs = require('fs')
+
+const { AVATAR_PATH } = require('../constants/file-path')
 const errorType = require('../constants/error-types')
 const { getUserByName } = require('../service/user.service')
 const { md5password } = require('../utils/passwordHandler')
+const { getUploadInfoService } = require('../service/upload.service')
+
 
 
 //用户名验证函数
@@ -38,4 +43,22 @@ const passwordHandler = async (ctx, next) => {
   await next()
 }
 
-module.exports = { verifyUser, passwordHandler }
+//获取头像信息，这里中间件位置写错了，应该写在controller里面，不过懒得改了，功能不影响
+const getAvatarInfo = async (ctx, next) => {
+
+  const userId = ctx.request.params.userId
+
+  //获取到最新的头像信息
+  const result = await getUploadInfoService(userId)
+
+  //读取头像的数据流
+  const avatar = fs.createReadStream(`${AVATAR_PATH}/${result.filename}`)
+
+  //设置响应头，告诉客户端返回的是什么类型的数据，类似从数据库获取，数据库的类型是由上传文件时multer解析得到的
+  ctx.response.set('content-type',avatar.mimetype)
+  //将数据流返回给客户端
+  ctx.response.body = avatar
+
+}
+
+module.exports = { verifyUser, passwordHandler, getAvatarInfo }

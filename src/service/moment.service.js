@@ -21,29 +21,40 @@ class MomentService {
 
     //先写sql预处理语句，采用左连接的方式，以动态列表为主表，用户为副表连接
     const sqlLan = `SELECT m.id AS id,m.content AS content,m.createAt AS createTime,m.updateAt AS updateTime,
-            JSON_OBJECT('id',u.id,'name',u.name) AS user,
-            (SELECT COUNT(*) FROM comment WHERE moment_id = m.id) AS cmomentCount, 
+            JSON_OBJECT('id',u.id,'name',u.name,'avatarURL',u.avatar_url) AS user,
+            (SELECT COUNT(*) FROM comment WHERE moment_id = m.id) AS comentCount, 
+            (SELECT COUNT(*) FROM moment_label WHERE moment_id = m.id) AS labelsCount,
+
             JSON_ARRAYAGG(JSON_OBJECT(
-              'id',comment.id,
-              'content',comment.content,
-              'momentId',comment.moment_id,
-              'userId',comment.user_id,
-              'commentId',comment.comment_id,
-              'createTime',comment.createAt,
-              'user',JSON_OBJECT('id',cu.id,'name',cu.name)
-            )) AS comments
+              'id',l.id,
+              'name',l.name
+            )) AS labels,
+
+            (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+              'id',c.id,
+              'content',c.content,
+              'momentId',c.moment_id,
+              'userId',c.user_id,
+              'commentId',c.comment_id,
+              'createTime',c.createAt,
+              'user',JSON_OBJECT('id',cu.id,'name',cu.name,'avatarURL',cu.avatar_url)
+            )) FROM comment c LEFT JOIN user cu 
+            ON c.user_id = cu.id WHERE m.id = c.moment_id) AS comments
+
             FROM moment AS m 
 
             LEFT JOIN user AS u 
             ON m.user_id = u.id
 
-            LEFT JOIN comment
-            ON comment.moment_id = m.id
+            LEFT JOIN moment_label AS ml
+            ON  m.id = ml.moment_id
 
-            LEFT JOIN user AS cu
-            ON comment.user_id = cu.id
+            LEFT JOIN label AS l
+            ON ml.label_id = l.id
 
-            WHERE m.id = ?;`
+            WHERE m.id = ?
+            
+            GROUP BY m.id;`
 
     //处理数据库语句
     const result = await connection.execute(sqlLan, [momId])
@@ -59,7 +70,8 @@ class MomentService {
     // 先写sql预处理语句，采用左连接的方式，以动态列表为主表，用户为副表连接，偏移和大小用limit在最后限制
     const sqlLan = `SELECT m.id AS id,m.content AS content,m.createAt AS createTime,m.updateAt AS updateTime,
           JSON_OBJECT('id',u.id,'name',u.name) AS user,
-          (SELECT COUNT(*) FROM comment WHERE moment_id = m.id) AS cmomentCount
+          (SELECT COUNT(*) FROM comment WHERE moment_id = m.id) AS cmomentCount,
+          (SELECT COUNT(*) FROM moment_label WHERE moment_label.moment_id = m.id) AS labelsCount
           FROM moment AS m 
           LEFT JOIN user AS u 
           ON m.user_id = u.id
@@ -125,7 +137,7 @@ class MomentService {
   }
 
   //给动态添加标签
-  async addLabelToMomentService(momentId, labels,ctx) {
+  async addLabelToMomentService(momentId, labels, ctx) {
 
     const sqlLan = `INSERT INTO moment_label (moment_id,label_id) VALUE (?,?);`
     const sqlLanB = `SELECT * FROM moment_label WHERE moment_id = ? AND label_id = ?;`

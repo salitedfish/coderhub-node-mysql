@@ -11,6 +11,7 @@ const PUBLIC_KEY = fs.readFileSync(path.resolve(__dirname, '../key/public.key'))
 
 //读取环境参数
 const encDate = {
+  APP_HOST,
   APP_PORT,
   MYSQL_HOST,
   MYSQL_PORT,
