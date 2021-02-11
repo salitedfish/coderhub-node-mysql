@@ -10,8 +10,9 @@ class UploadService {
     const sqlLanB = 'UPDATE user SET avatar_url = ? WHERE id = ?;'
 
 
-    //传入图片的信息还有用户的id，并执行语句
+    //把图片信息保存在avatar里面
     const result = await connection.execute(sqlLanA, [filename, mimetype, size, id])
+    //把图片地址保存在user里面
     await connection.execute(sqlLanB, [`${APP_HOST}:${APP_PORT}/users/${id}/avatar/${filename}`, id])
 
     return result[0]
